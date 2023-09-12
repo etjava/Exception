@@ -1,0 +1,7 @@
+$.post("${pageContext.request.contextPath}/user/list",{
+                userName:$("#s_userName").val(),
+                trueName:$("#s_trueName").val(),
+                email:$("#s_email").val()
+            },function(result){
+                $('#dg').datagrid('loadData', result);
+            },"json");
