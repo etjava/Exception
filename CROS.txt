@@ -1,0 +1,88 @@
+方式1
+// 在控制器类上启用跨域  地址为前端的请求路径
+// 该方式较为繁琐 因为需要在每个请求的方法上添加@CrossOrigin注解
+@CrossOrigin(origins = "http://localhost:8080")
+@RestController
+public class YourController {
+    // ...
+}
+方式2
+// 或者使用配置类全局配置跨域
+@Configuration
+public class CorsConfig {
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurerAdapter() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:8080")// 地址为前端的请求路径
+                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+                        .allowedHeaders("*")
+                        .allowCredentials(true)
+                        .maxAge(3600);
+            }
+        };
+    }
+}
+
+方式3
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class WebMvcConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")      // 设置映射
+                .allowedOriginPatterns("*")        // 设置域
+                .allowedMethods("*")               // 设置请求的方式GET、POST等
+                .allowCredentials(true)            // 设置是否携带cookie
+                .maxAge(3600)                      // 设置设置的有效期 秒单位
+                .allowedHeaders("*");              // 设置头
+    }
+}
+方式4
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+@Configuration
+public class CorsConfig {
+    
+    @Bean
+    public CorsFilter corsFilter() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        // 使用通配符* 允许所有的域请求
+        corsConfiguration.addAllowedOrigin("*");
+        // 使用通配符* 允许所有请求头字段
+        corsConfiguration.addAllowedHeader("*");
+        // 使用通配符* 允许所有请求头方法类型
+        corsConfiguration.addAllowedMethod("*");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // 处理请求映射
+        source.registerCorsConfiguration("/**", corsConfiguration);
+        
+        return new CorsFilter(source);
+    }
+}
+
+方式5
+
+代理转发：在Vue的前端代码中，通过配置代理实现跨域请求。在vue.config.js文件中添加以下配置：
+module.exports = {
+    devServer: {
+        proxy: {
+            '/api': {
+                target: 'http://localhost:8081', // 后端服务地址
+                ws: true,
+                changeOrigin: true
+            }
+        }
+    }
+};
